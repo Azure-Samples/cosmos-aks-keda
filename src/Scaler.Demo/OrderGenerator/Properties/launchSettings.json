@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Keda.CosmosDb.Scaler.Demo.OrderGenerator": {
+      "commandName": "Project",
+      "commandLineArgs": "generate"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

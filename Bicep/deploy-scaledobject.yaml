@@ -1,0 +1,22 @@
+# Create KEDA scaled object to scale order processor application.
+
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: cosmosdb-order-processor-scaledobject
+  namespace: cosmosdb-order-processor
+spec:
+  pollingInterval: 20
+  scaleTargetRef:
+    name: cosmosdb-order-processor
+  triggers:
+    - type: external
+      metadata:
+        scalerAddress: cosmosdb-scaler.cosmosdb-order-processor:4050
+        endpoint: https://{Cosmos Account Name}.documents.azure.com:443/ # update as per your environment
+        databaseId: StoreDatabase
+        containerId: OrderContainer
+        LeaseEndpoint: https://{Cosmos Account Name}.documents.azure.com:443/ # update as per your environment
+        leaseDatabaseId: StoreDatabase
+        leaseContainerId: OrderProcessorLeases
+        processorName: OrderProcessor
