@@ -1,4 +1,4 @@
-# AKS Cluster, Cosmos DB, Key Vault, and ACR using Bicep
+# AKS Cluster, Cosmos DB, and ACR using Bicep
 
 ## Overview
 
