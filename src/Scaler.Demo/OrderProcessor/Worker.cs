@@ -10,6 +10,8 @@ using Microsoft.Extensions.Logging;
 using Azure.Identity;
 using System.ComponentModel;
 using System.Diagnostics.Metrics;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
 using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Container = Microsoft.Azure.Cosmos.Container;
 
@@ -36,7 +38,15 @@ namespace Keda.CosmosDb.Scaler.Demo.OrderProcessor
         {
             Database leaseDatabase;
 
-            
+            using MeterProvider meterProvider = Sdk.CreateMeterProviderBuilder()
+                .AddMeter("OrderProcessor.CFStore")
+                .AddPrometheusExporter(opt =>
+                 {
+                     opt.StartHttpListener = true;
+                     opt.HttpListenerPrefixes = new string[] { $"http://localhost:9184/" };
+                 })
+                 .Build();
+
 
             if (string.IsNullOrEmpty(_cosmosDbConfig.LeaseConnection))
             {
