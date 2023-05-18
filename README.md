@@ -326,7 +326,7 @@ For more information refer to [Deploying KEDA](https://keda.sh/docs/deploy/) doc
 1. Apply 'scaler_deploy' deployment YAML
 
     ```azurecli
-    kubectl apply -f scaler_deploy.yaml --namespace 'cosmosdb-order-processor'
+    kubectl apply -f scaler_deploy.yaml --namespace cosmosdb-order-processor
     ```
 
     You should see the following result.
@@ -338,14 +338,15 @@ For more information refer to [Deploying KEDA](https://keda.sh/docs/deploy/) doc
 
 ## Deploying the order processor to cluster
 
-Push the 'cosmosdb-order-processor' container image to Azure Container Registry.Set the environment variables by replacing the {ACR Name} placeholders with your own values.
+1. Push the 'cosmosdb-order-processor' container image to Azure Container Registry.Set the environment variables by replacing the {ACR Name} placeholders with your own values.
 
-    ```dotnetcli
-    
-    docker tag cosmosdb-order-processor:latest {ACR Name}.azurecr.io/cosmosdb/order-processor
-    docker push {ACR Name}.azurecr.io/cosmosdb/order-processor
+```dotnetcli
 
-    ```
+docker tag cosmosdb-order-processor:latest {ACR Name}.azurecr.io/cosmosdb/order-processor
+docker push {ACR Name}.azurecr.io/cosmosdb/order-processor
+
+```
+
 1. Using the following YAML template create a 'orderprocessor_deploy.yaml'. Make sure to update your own values for '{ACR Name}`,{Cosmos Account Name} placeholders.
 
     ```yml
@@ -381,13 +382,13 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
 1. Apply 'orderprocessor_deploy.yml' deployment YAML
 
     ```azurecli
-   kubectl apply -f orderprocessor_deploy.yml  --namespace 'cosmosdb-order-processor'
+   kubectl apply -f orderprocessor_deploy.yml  --namespace cosmosdb-order-processor
     ```
 
 1. Ensure that the order-processor application is running correctly on the cluster by checking application logs.
 
     ```azurecli
-    kubectl get pods --namespace 'cosmosdb-order-processor'
+    kubectl get pods --namespace cosmosdb-order-processor
     ```
 
     You should see the following result.
@@ -401,7 +402,7 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
     Check the cosmosdb-order-processor logs
 
     ```azurecli
-    kubectl logs cosmosdb-order-processor-855f54dcd4-4mvmt --namespace 'cosmosdb-order-processor'
+    kubectl logs cosmosdb-order-processor-855f54dcd4-4mvmt --namespace cosmosdb-order-processor
     ```
 
     You should see the following result.
@@ -447,7 +448,7 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
 1. Apply 'orderprocessor_deploy.yml' deployment YAML
 
     ```azurecli
-    kubectl apply -f deploy-scaledobject.yaml  --namespace 'cosmosdb-order-processor'
+    kubectl apply -f deploy-scaledobject.yaml  --namespace cosmosdb-order-processor
     ```
 
 
@@ -457,7 +458,7 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
 1. Verify that there is no order-processor pod running after the scaled object was created.
 
     ```azurecli
-     kubectl get pods --namespace 'cosmosdb-order-processor'
+     kubectl get pods --namespace cosmosdb-order-processor
     ```
 
     You should see the following result.
@@ -467,7 +468,7 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
     cosmosdb-scaler-69694c8858-7xbpj   1/1     Running   0          14h
     ```
 
-## Deploying the single partition order generator to cluster
+### Deploying the single partition order generator to cluster
 
 1. Push the 'cosmosdb-order-generator' container image to Azure Container Registry.Set the environment variables by replacing the {ACR Name} placeholders with your own values.
 
@@ -504,7 +505,7 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
           - name: mycontainer
             image: {ACR Name}.azurecr.io/cosmosdb/order-generator:latest   # update as per your environment, example myacrname.azurecr.io/cosmosdb/order-generator:latest. Do NOT add https:// in ACR Name
             imagePullPolicy: Always
-            args: ["false", "true","10"]
+            args: ["false", "true","25"]
             env:
               - name: CosmosDbConfig__Endpoint
                 value: https://{Cosmos Account Name}.documents.azure.com:443/  # update as per your environment
@@ -514,14 +515,14 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
 1. Apply 'ordergenerator_sp_deploy.yaml' deployment YAML
 
     ```azurecli
-   kubectl apply -f ordergenerator_sp_deploy.yaml  --namespace 'cosmosdb-order-processor'
+   kubectl apply -f ordergenerator_sp_deploy.yaml  --namespace cosmosdb-order-processor
     ```
 
 
 1. Verify that only one pod is created for the order-processor. It may take a few seconds for the pod to show up. You should see the following result.
 
     ```azurecli
-    # kubectl get pods
+    # kubectl get pods --namespace cosmosdb-order-processor
     ```
 
     You should see the following result.
@@ -532,6 +533,8 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
     cosmosdb-scaler-69694c8858-7xbpj                    1/1     Running   0          14h
     single-partition-order-generator-75d88b4846-s2v42   1/1     Running   0          30s
     ```
+
+### Deploying the multi partition order generator to cluster
 
 1. Now, add more orders to the Cosmos DB container but this time across multiple partitions, using the following YAML template create a 'ordergenerator_mp_deploy.yaml'. Make sure to update your own values for '{ACR Name}`,{Cosmos Account Name} placeholders.
 
@@ -569,13 +572,13 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
 1. Apply 'ordergenerator_sp_deploy.yaml' deployment YAML
 
     ```azurecli
-   kubectl apply -f ordergenerator_mp_deploy.yaml  --namespace 'cosmosdb-order-processor'
+   kubectl apply -f ordergenerator_mp_deploy.yaml  --namespace cosmosdb-order-processor
     ```
 
 1. Verify that two pods are created for the order-processor.
 
     ```azurecli
-    # kubectl get pods
+    # kubectl get pods --namespace cosmosdb-order-processor
     ```
 
     You should see the following result.
@@ -591,46 +594,58 @@ Push the 'cosmosdb-order-processor' container image to Azure Container Registry.
 
 1. You can also verify that both order-processor pods are able to share the processing of orders.
     
-    Check the first order processor pod logs. 
+    1. Check the first order processor pod logs.
 
-    ```azurecli
-    kubectl logs cosmosdb-order-processor-b59956989-fscsb --tail=4
-    ```
+      ```azurecli
+      kubectl logs cosmosdb-order-processor-767d498685-cmf8l --tail=4
+      ```
 
-    You should see the following result.
+      You should see the following result.
 
-    ```text
-    2021-09-03 12:57:41 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
-        Order 5ba7f503-0185-49f6-9fce-3da999464049 processed
-    2021-09-03 12:57:41 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
-        Processing order ce1f05ad-08ff-4535-858f-3158de41971b - 8 unit(s) of Computer bought by Jaren Tremblay
+      ```text
+      2021-09-03 12:57:41 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
+          Order 5ba7f503-0185-49f6-9fce-3da999464049 processed
+      2021-09-03 12:57:41 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
+          Processing order ce1f05ad-08ff-4535-858f-3158de41971b - 8 unit(s) of Computer bought by Jaren Tremblay
+      ```
 
-    Check the other order processor pod logs.    
+    1. Check the other order processor pod logs.
 
-    ```azurecli
-    kubectl logs cosmosdb-order-processor-b59956989-dxp4b --tail=4
-    ```
+      ```azurecli
+      kubectl logs cosmosdb-order-processor-767d498685-t7fs5 --tail=4
+      ```
 
-    You should see the following result.
+      You should see the following result.
 
-    ```text
-    2021-09-03 12:57:53 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
-        Order e881c998-1318-411e-8181-fa638335910e processed
-    2021-09-03 12:57:53 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
-        Processing order ca17597f-7aa2-4b04-abd8-724139b2c370 - 1 unit(s) of Gloves bought by Donny Shanahan
-    ```
+      ```text
+      2021-09-03 12:57:53 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
+          Order e881c998-1318-411e-8181-fa638335910e processed
+      2021-09-03 12:57:53 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
+          Processing order ca17597f-7aa2-4b04-abd8-724139b2c370 - 1 unit(s) of Gloves bought by Donny Shanahan
+      ```
+
+### Stop order generator to cluster
+
+1. Execute the below commands to delete the order generator pods
+
+  ```azurecli
+
+  kubectl delete -f ordergenerator_sp_deploy.yaml  --namespace cosmosdb-order-processor
+  kubectl delete -f ordergenerator_mp_deploy.yaml  --namespace cosmosdb-order-processor
+  ```
+
 1. Wait for 10-15 minutes. The pods will automatically scale down to 0.
 
-    ```azurecli
-    # kubectl get pods
-    ```
+  ```azurecli
+  # kubectl get pods --namespace cosmosdb-order-processor
+  ```
 
-    You should see the following result.
+  You should see the following result.
 
-    ```text
-    NAME                                       READY   STATUS    RESTARTS   AGE
-    cosmosdb-scaler-64dd48678c-d6dqq           1/1     Running   0          35m
-    ```
+  ```text
+  NAME                                       READY   STATUS    RESTARTS   AGE
+  cosmosdb-scaler-64dd48678c-d6dqq           1/1     Running   0          35m
+  ```
 
 ## Cleanup
 
