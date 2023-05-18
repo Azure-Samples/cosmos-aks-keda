@@ -9,9 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Azure.Identity;
 using System.ComponentModel;
-using System.Diagnostics.Metrics;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
+
 using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Container = Microsoft.Azure.Cosmos.Container;
 
@@ -24,9 +22,6 @@ namespace Keda.CosmosDb.Scaler.Demo.OrderProcessor
 
         private ChangeFeedProcessor _processor;
 
-        static Meter s_meter = new Meter("OrderProcessor.CFStore", "1.0.0");
-        private static Counter<int> s_CFRecordsReceived = s_meter.CreateCounter<int>("RecordsReceived");
-        private static Counter<int> s_CFProcessorCount = s_meter.CreateCounter<int>("ProcessorCount");
 
         public Worker(CosmosDbConfig cosmosDbConfig, ILogger<Worker> logger)
         {
@@ -37,15 +32,6 @@ namespace Keda.CosmosDb.Scaler.Demo.OrderProcessor
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
             Database leaseDatabase;
-
-            using MeterProvider meterProvider = Sdk.CreateMeterProviderBuilder()
-                .AddMeter("OrderProcessor.CFStore")
-                .AddPrometheusExporter(opt =>
-                 {
-                     opt.StartHttpListener = true;
-                     opt.HttpListenerPrefixes = new string[] { $"http://localhost:9184/" };
-                 })
-                 .Build();
 
 
             if (string.IsNullOrEmpty(_cosmosDbConfig.LeaseConnection))
@@ -91,7 +77,7 @@ namespace Keda.CosmosDb.Scaler.Demo.OrderProcessor
                        .WithLeaseContainer(leaseContainer)
                        .Build();
 
-            s_CFProcessorCount.Add(1);
+            
 
             await _processor.StartAsync();
             _logger.LogInformation($"Started change feed processor instance {instanceName}");
@@ -111,8 +97,7 @@ namespace Keda.CosmosDb.Scaler.Demo.OrderProcessor
         }
 
         private async Task ProcessOrdersAsync(IReadOnlyCollection<Order> orders, CancellationToken cancellationToken)
-        {
-            s_CFRecordsReceived.Add(orders.Count);
+        {            
             
             _logger.LogInformation($"{orders.Count} order(s) received");
 

@@ -80,23 +80,13 @@ namespace Keda.CosmosDb.Scaler.Demo.OrderGenerator
                    .GetContainer(_cosmosDbConfig.DatabaseId, _cosmosDbConfig.ContainerId);
             }
 
-            int remainingCount = count;
-           
 
-            while (remainingCount > 0)
-            {
-                // Do not push all orders together as that may cause requests to get throttled.
-                int newCount = Math.Min(remainingCount, 20);
+            Task[] createOrderTasks = Enumerable.Range(0, count)
+                .Select(_ => CreateOrderAsync(container, article))
+                .ToArray();
 
-                Task[] createOrderTasks = Enumerable.Range(0, newCount)
-                    .Select(_ => CreateOrderAsync(container, article))
-                    .ToArray();
+            await Task.WhenAll(createOrderTasks);
 
-                await Task.WhenAll(createOrderTasks);
-                await Task.Delay(TimeSpan.FromSeconds(2));
-
-                remainingCount -= newCount;
-            }
            
         }
 
