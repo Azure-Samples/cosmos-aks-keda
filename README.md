@@ -340,12 +340,12 @@ For more information refer to [Deploying KEDA](https://keda.sh/docs/deploy/) doc
 
 1. Push the 'cosmosdb-order-processor' container image to Azure Container Registry.Set the environment variables by replacing the {ACR Name} placeholders with your own values.
 
-```dotnetcli
-
-docker tag cosmosdb-order-processor:latest {ACR Name}.azurecr.io/cosmosdb/order-processor
-docker push {ACR Name}.azurecr.io/cosmosdb/order-processor
-
-```
+    ```dotnetcli
+    
+    docker tag cosmosdb-order-processor:latest {ACR Name}.azurecr.io/cosmosdb/order-processor
+    docker push {ACR Name}.azurecr.io/cosmosdb/order-processor
+    
+    ```
 
 1. Using the following YAML template create a 'orderprocessor_deploy.yaml'. Make sure to update your own values for '{ACR Name}`,{Cosmos Account Name} placeholders.
 
@@ -596,33 +596,33 @@ docker push {ACR Name}.azurecr.io/cosmosdb/order-processor
     
     1. Check the first order processor pod logs.
 
-      ```azurecli
-      kubectl logs cosmosdb-order-processor-767d498685-cmf8l --tail=4
-      ```
-
-      You should see the following result.
-
-      ```text
-      2021-09-03 12:57:41 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
-          Order 5ba7f503-0185-49f6-9fce-3da999464049 processed
-      2021-09-03 12:57:41 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
-          Processing order ce1f05ad-08ff-4535-858f-3158de41971b - 8 unit(s) of Computer bought by Jaren Tremblay
-      ```
+          ```azurecli
+          kubectl logs cosmosdb-order-processor-767d498685-cmf8l --tail=4
+          ```
+    
+          You should see the following result.
+    
+          ```text
+          2021-09-03 12:57:41 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
+              Order 5ba7f503-0185-49f6-9fce-3da999464049 processed
+          2021-09-03 12:57:41 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
+              Processing order ce1f05ad-08ff-4535-858f-3158de41971b - 8 unit(s) of Computer bought by Jaren Tremblay
+          ```
 
     1. Check the other order processor pod logs.
 
-      ```azurecli
-      kubectl logs cosmosdb-order-processor-767d498685-t7fs5 --tail=4
-      ```
-
-      You should see the following result.
-
-      ```text
-      2021-09-03 12:57:53 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
-          Order e881c998-1318-411e-8181-fa638335910e processed
-      2021-09-03 12:57:53 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
-          Processing order ca17597f-7aa2-4b04-abd8-724139b2c370 - 1 unit(s) of Gloves bought by Donny Shanahan
-      ```
+          ```azurecli
+          kubectl logs cosmosdb-order-processor-767d498685-t7fs5 --tail=4
+          ```
+    
+          You should see the following result.
+    
+          ```text
+          2021-09-03 12:57:53 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
+              Order e881c998-1318-411e-8181-fa638335910e processed
+          2021-09-03 12:57:53 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
+              Processing order ca17597f-7aa2-4b04-abd8-724139b2c370 - 1 unit(s) of Gloves bought by Donny Shanahan
+          ```
 
 ### Stop order generator to cluster
 
