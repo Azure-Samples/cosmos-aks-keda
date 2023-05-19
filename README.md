@@ -135,13 +135,32 @@ Use the below command to add and update Helm chart repo.
 helm repo add kedacore https://kedacore.github.io/charts
 helm repo update
 ```
-
 Use the below command to install KEDA Helm chart (or follow one of the other installation methods on KEDA documentation).
 
 ```azurecli
 helm install keda kedacore/keda --namespace keda --create-namespace
 ```
+Alternatively, You can use the mangaged AKS addon for Keda - install the AKS KEDA add-on with Azure CLI:
 
+Register the AKS-KedaPreview feature flag by using the az feature register command, as shown in the following example:
+```azurezli
+az feature register --namespace "Microsoft.ContainerService" --name "AKS-KedaPreview"
+```
+It takes a few minutes for the status to show Registered. Verify the registration status by using the az feature show command:
+```azurezli
+az feature show --namespace "Microsoft.ContainerService" --name "AKS-KedaPreview"
+```
+When the status reflects Registered, refresh the registration of the Microsoft.ContainerService resource provider by using the az provider register command:
+```azurecli
+az provider register --namespace Microsoft.ContainerService
+```
+To install the KEDA add-on, use --enable-keda when creating or updating a cluster.
+```azurecli
+az aks update \
+  --resource-group myResourceGroup \
+  --name myAKSCluster \
+  --enable-keda
+  ```
 Use the below command to install Azure Cosmos DB external scaler Helm chart.
 
 ```azurecli
