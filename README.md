@@ -18,7 +18,7 @@ The Bicep modules will provision the following Azure Resources under subscriptio
 
 ### Architecture
 
-![Architecture Diagram](assets/images/cosmos-todo-aks-architecture.png)
+![Architecture Diagram](assets/images/architecture_final.png)
 
 ### Securing the Cosmos DB account
 
