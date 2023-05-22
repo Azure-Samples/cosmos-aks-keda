@@ -18,7 +18,7 @@ The Bicep modules will provision the following Azure Resources under subscriptio
 
 ### Architecture
 
-![Architecture Diagram](assets/images/cosmos-todo-aks-architecture.png)
+![Architecture Diagram](assets/images/architecture_final.png)
 
 ### Securing the Cosmos DB account
 
@@ -149,6 +149,32 @@ helm install external-scaler-azure-cosmos-db kedacore/external-scaler-azure-cosm
 ```
 
 For more information refer to [Deploying KEDA](https://keda.sh/docs/deploy/) documentation page to deploy KEDA on your Kubernetes cluster.
+
+**8. Enable Azure Monitor Managed Prometheus and Managed Graphana on AKS Cluster**
+
+Prerequisites:
+
+1. Register the AKS-PrometheusAddonPreview feature flag in the Azure Kubernetes clusters subscription with the following command in the Azure CLI: 
+```azurecli
+az feature register --namespace Microsoft.ContainerService --name AKS-PrometheusAddonPreview
+```
+2. The aks-preview extension must be installed by using the command 
+```azurecli
+az extension add --name aks-preview
+```
+For more information on how to install a CLI extension, see Use and manage extensions with the Azure CLI.
+
+3. The aks-preview version 0.5.138 or higher is required for this feature. Check the aks-preview version by using the az version command.
+
+### Install the Metrics add-on
+
+Use an existing Azure Monitor workspace and link with an existing Grafana workspace.
+
+This option creates a link between the Azure Monitor workspace and the Grafana workspace.
+
+```azurecli
+az aks update --enable-azuremonitormetrics -n <cluster-name> -g <cluster-resource-group> --azure-monitor-workspace-resource-id <azure-monitor-workspace-name-resource-id> --grafana-resource-id  <grafana-workspace-name-resource-id>
+```
 
 ## Testing sample application locally on Docker
 
