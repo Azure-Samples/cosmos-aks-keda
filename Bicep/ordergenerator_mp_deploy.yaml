@@ -24,4 +24,4 @@ spec:
         args: ["false", "false","25"] # Run once and stop, generate multi partition data, Number of items to ingest per run
         env:
           - name: CosmosDbConfig__Endpoint
-            value: https://{Cosmos Account Name}.documents.azure.com:443/  # update as per your environment
+            value: https://{Cosmos DB Account Name}.documents.azure.com:443/  # update as per your environment
