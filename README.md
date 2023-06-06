@@ -190,6 +190,8 @@ For more information on how to install a CLI extension, see Use and manage exten
 
 **Note** The aks-preview version 0.5.138 or higher is required for this feature. Check the aks-preview version by using the az version command.
 
+3. Add the custom grfana dashboard to your manged grafa instance by importing this json file - Build Demo grafana dashoard.json from the src folder.
+
 **9. Install the Metrics add-on**
 
 Use an existing Azure Monitor workspace and link with an existing Grafana workspace.
@@ -708,3 +710,5 @@ Use the below commands to delete the Resource Group and Deployment
 az group delete -g $rgName -y
 az deployment sub delete -n $deploymentName
 ```
+
+**Note**  You can find the cmd commands used for the Build Demo in the Demo Script file
