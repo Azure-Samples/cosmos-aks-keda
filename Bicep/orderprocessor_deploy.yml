@@ -22,8 +22,8 @@ spec:
         imagePullPolicy: Always
         env:
           - name: CosmosDbConfig__Endpoint
-            value: https://{Cosmos Account Name}.documents.azure.com:443/  # update as per your environment
+            value: https://{Cosmos DB Account Name}.documents.azure.com:443/  # update as per your environment
           - name: CosmosDbConfig__LeaseEndpoint
-            value: https://{Cosmos Account Name}.documents.azure.com:443/ # update as per your environment
+            value: https://{Cosmos DB Account Name}.documents.azure.com:443/ # update as per your environment
 
  

@@ -9,7 +9,7 @@
       "value": "{Cosmos DB Account Name}"
     },
     "acrName" :{
-      "value": "{ACR Instance Name}"
+      "value": "{ACR Name}"
 	},
     "throughput" :{
         "value": 11000
