@@ -191,6 +191,8 @@ For more information on how to install a CLI extension, see Use and manage exten
 **Note** The aks-preview version 0.5.138 or higher is required for this feature. Check the aks-preview version by using the az version command.
 
 3. Add the custom grfana dashboard to your manged grafa instance by importing this json file - Build Demo grafana dashoard.json from the src folder.
+4. 
+5. To get Cosmos DB metrics into Grafana, you need to provide the Managed grafana instance read access to the CosmosDB cluster. That will allow you to pin any metric to a Grafana dashboard that has the requried read access. 
 
 **9. Install the Metrics add-on**
 
