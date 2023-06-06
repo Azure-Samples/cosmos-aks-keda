@@ -1,0 +1,23 @@
+
+## Show all the deployments running in the cluster
+kubectl get deployments -A
+
+
+## scale up the multi-partition order genertor deployment to 100 replicas. 
+kubectl scale --replicas=100 deployment/multi-partition-order-generator -n cosmosdb-order-processor
+
+## show that the deployment is scaling up 
+kubectl get deployments -A
+
+
+## pull the pod id for the scaler
+kubectl get pods -n cosmosdb-order-processor --field-selector=status.phase=Running
+
+## pull the logs for the scaler pod
+kubectl logs <podname> -n cosmosdb-order-processor
+
+## Switch to Grafana
+- SHow the generator deployment pod count going up 
+- How the no. of processor pods should match up to the     Count of Partitions with lag in the scaler logs.
+
+## Move over to cosmosDB to show some of the insights and the cool partitioning Stuff
