@@ -6,6 +6,8 @@ param acrName string
 param cosmosName string
 param location string =deployment().location
 param throughput int = 1000
+param service_account_namespace string = 'cosmosdb-order-processor'
+param service_account_name string = 'workload-identity-sa'
 
 var baseName = rgName
 
@@ -45,15 +47,6 @@ module vnetAKS 'modules/vnet/vnet.bicep' = {
   ]
 }
 
-module acrDeploy 'modules/acr/acr.bicep' = {
-  scope: resourceGroup(rg.name)
-  name: 'acrInstance'
-  params: {
-    acrName: acrName
-    principalId: aksIdentity.outputs.principalId
-    location: location
-  }
-}
 
 /*
 // Uncomment this to configure log analytics workspace
@@ -96,18 +89,34 @@ module aksCluster 'modules/aks/aks.bicep' = {
     location: location
     basename: baseName
    // logworkspaceid: akslaworkspace.outputs.laworkspaceId   // Uncomment this to configure log analytics workspace
-    podBindingSelector: 'cosmosdb-order-processor-identity'
-    podIdentityName: 'cosmosdb-order-processor-identity'
-    podIdentityNamespace: 'cosmosdb-order-processor'
     subnetId: subnetaks.id  
-    clientId: aksIdentity.outputs.clientId
-    identityid: aksIdentity.outputs.identityid
     identity: {
       '${aksIdentity.outputs.identityid}' : {}
     }
-    principalId: aksIdentity.outputs.principalId
   }
 }
+
+module federatedCredential 'modules/Identity/federatedcredential.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'federatedCredential'
+  params: {
+    identity_name: aksIdentity.outputs.name
+    aksCluster_issuerUrl: aksCluster.outputs.issuerUrl
+    service_account_namespace: service_account_namespace
+    service_account_name: service_account_name
+  }
+}
+
+module acrDeploy 'modules/acr/acr.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'acrInstance'
+  params: {
+    acrName: acrName
+    principalId: aksCluster.outputs.principalId
+    location: location
+  }
+}
+
 
 module cosmosdb 'modules/cosmos/cosmos.bicep'={
   scope:resourceGroup(rg.name)
@@ -122,4 +131,8 @@ module cosmosdb 'modules/cosmos/cosmos.bicep'={
 
 }
 
-
+output resourceGroup string = rg.name
+output acrName string = acrName
+output aksName string = aksCluster.outputs.aksName
+output cosmosName string = cosmosName
+output workloadIdentity string = aksIdentity.outputs.clientId

@@ -13,11 +13,12 @@ spec:
   template:
     metadata:
       labels:
-        aadpodidbinding: "cosmosdb-order-processor-identity"
+        azure.workload.identity/use: "true"
         app: cosmosdb-scaler
     spec:
+      serviceAccountName: workload-identity-sa
       containers:
-        - image: {ACR Name}azurecr.io/cosmosdb/scaler:latest   # update as per your environment, example myacrname.azurecr.io/cosmosdb/scaler:latest. Do NOT add https:// in ACR Name
+        - image: {ACR Name}.azurecr.io/cosmosdb/scaler:latest   # update as per your environment, example myacrname.azurecr.io/cosmosdb/scaler:latest. Do NOT add https:// in ACR Name
           imagePullPolicy: Always
           name: cosmosdb-scaler
           ports:

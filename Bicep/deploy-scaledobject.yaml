@@ -13,10 +13,10 @@ spec:
     - type: external
       metadata:
         scalerAddress: cosmosdb-scaler.cosmosdb-order-processor:4050
-        endpoint: https://{Cosmos Account Name}.documents.azure.com:443/ # update as per your environment
+        endpoint: https://{Cosmos DB Account Name}.documents.azure.com:443/ # update as per your environment
         databaseId: StoreDatabase
         containerId: OrderContainer
-        LeaseEndpoint: https://{Cosmos Account Name}.documents.azure.com:443/ # update as per your environment
+        LeaseEndpoint: https://{Cosmos DB Account Name}.documents.azure.com:443/ # update as per your environment
         leaseDatabaseId: StoreDatabase
         leaseContainerId: OrderProcessorLeases
         processorName: OrderProcessor

@@ -1,19 +1,14 @@
 param basename string
 
 param identity object
-param identityid string
-param clientId string
-param principalId string
 param location string = resourceGroup().location
-param podBindingSelector string
-param podIdentityName string
-param podIdentityNamespace string
+
 
 //param logworkspaceid string  // Uncomment this to configure log analytics workspace
 
 param subnetId string
 
-resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-06-02-preview' = {
+resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-05-02-preview' = {
   name: '${basename}aks'
   location: location
   identity: {
@@ -24,6 +19,14 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-06-02-previ
     kubernetesVersion: '1.26.3'
     nodeResourceGroup: '${basename}-aksInfraRG'
     dnsPrefix: '${basename}aks'
+    oidcIssuerProfile: {
+      enabled: true
+    }
+    securityProfile: {
+      workloadIdentity: {
+        enabled: true
+      }
+    }
     agentPoolProfiles: [
       {
         name: 'default'
@@ -46,7 +49,6 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-06-02-previ
       loadBalancerSku: 'standard'
       networkPlugin: 'azure'
       outboundType: 'loadBalancer'
-      dockerBridgeCidr: '172.17.0.1/16'
       dnsServiceIP: '10.0.0.10'
       serviceCidr: '10.0.0.0/16'
  
@@ -73,39 +75,9 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-06-02-previ
       }
     }
     
-    podIdentityProfile: {
-      enabled: true
-      userAssignedIdentities: [
-        {
-          bindingSelector: podBindingSelector
-          identity: {
-            clientId: clientId
-            resourceId: identityid
-            objectId: principalId
-          }
-          name: podIdentityName
-          namespace: podIdentityNamespace
-        }
-      ]
-      userAssignedIdentityExceptions: [
-        {
-          name: 'string'
-          namespace: 'string'
-          podLabels: {}
-        }
-      ]
-    }
-    disableLocalAccounts: false
   }
 }
 
-
-
-
-
-
-
-
-
-
-
+output aksName string = aksCluster.name
+output issuerUrl string = aksCluster.properties.oidcIssuerProfile.issuerURL
+output principalId string = aksCluster.properties.identityProfile.kubeletidentity.objectId
