@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository explains on how to use modular approach for Infrastructure as Code to provision a AKS cluster and few related resources. 
+This repository explains on how to use modular approach for Infrastructure as Code to provision a AKS cluster and few related resources.
 
 The [Bicep](https://docs.microsoft.com/azure/azure-resource-manager/bicep/overview?tabs=bicep) modules in the repository are designed keeping baseline architecture in mind. You can start using these modules as is or modify to suit the needs.
 
@@ -29,7 +29,7 @@ You can configure the Azure Cosmos DB account to:
 
 For simplicity we have not implemented them in this sample. Consider using the following best practices to enhance security of the Azure Cosmos DB account in Production applications.
 
-1. Limits access to the subnet by [configuring a virtual network service endpoint](https://docs.microsoft.com/azure/cosmos-db/how-to-configure-vnet-service-endpoint). 
+1. Limits access to the subnet by [configuring a virtual network service endpoint](https://docs.microsoft.com/azure/cosmos-db/how-to-configure-vnet-service-endpoint).
 1. Set disableLocalAuth = true in the databaseAccount resource to [enforce RBAC as the only authentication method](https://docs.microsoft.com//azure/cosmos-db/how-to-setup-rbac#disable-local-auth).
 
 Refer to the comments in *Bicep\modules\cosmos\cosmos.bicep*, and *Bicep\modules\vnet\vnet.bicep* files and edit these files as required to apply the above mentioned restrictions.
@@ -64,7 +64,7 @@ Create a param.json file by using the following JSON, replace the {Resource Grou
   "parameters": {
     "rgName": {
       "value": "{Resource Group Name}"
-    },    
+    },
     "cosmosName" :{
       "value": "{Cosmos DB Account Name}"
     },
@@ -100,30 +100,14 @@ You can also see the deployment status in the Resource Group
 
 ![Deployment Status inside RG](assets/images/rg_postdeployment.png)
 
-**5. Link Azure Container Registry with AKS**
-
-Set the environment variables by replacing the {ACR Name}, {Resource Group Name}, and {AKS Cluster Name} placeholders with your own values. Ensure that the below values for {ACR Name} and {Resource Group Name} placeholders match with values supplied in param.json.
-
-```azurecli
-
-acrName='{ACR Name}'
-rgName='{Resource Group Name}'
-
-```
-
-Run the below command to integrate the ACR with the AKS cluster
-
-```azurecli
-
-aksName=$rgName'aks'
-az aks update -n $aksName -g $rgName --attach-acr $acrName
-```
 
 **6. Sign in to AKS CLuster**
 
 Use the below command to sign in to your AKS cluster. This command also downloads and configures the kubectl client certificate on your environment.
 
 ```azurecli
+aksName=$(az deployment sub show --name $deploymentName --query 'properties.outputs.aksName.value' -o tsv)
+rgName=$(az deployment sub show --name $deploymentName --query 'properties.outputs.resourceGroup.value' -o tsv)
 az aks get-credentials -n $aksName -g $rgName
 ```
 
@@ -169,11 +153,11 @@ helm install external-scaler-azure-cosmos-db kedacore/external-scaler-azure-cosm
 
 For more information refer to [Deploying KEDA](https://keda.sh/docs/deploy/) documentation page to deploy KEDA on your Kubernetes cluster.
 
-**8. Enable Azure Monitor Managed Prometheus and Managed Graphana on AKS Cluster**
+**8. Enable Azure Monitor Managed Prometheus and Managed Grafana on AKS Cluster**
 
 Prerequisites:
 
-1. Register the AKS-PrometheusAddonPreview feature flag in the Azure Kubernetes clusters subscription with the following command in the Azure CLI: 
+1. Register the AKS-PrometheusAddonPreview feature flag in the Azure Kubernetes clusters subscription with the following command in the Azure CLI:
 
     ```azurecli
 
@@ -190,9 +174,9 @@ For more information on how to install a CLI extension, see Use and manage exten
 
 **Note** The aks-preview version 0.5.138 or higher is required for this feature. Check the aks-preview version by using the az version command.
 
-3. Add the custom grfana dashboard to your manged grafa instance by importing this json file - Build Demo grafana dashoard.json from the src folder.
-4. 
-5. To get Cosmos DB metrics into Grafana, you need to provide the Managed grafana instance read access to the CosmosDB cluster. That will allow you to pin any metric to a Grafana dashboard that has the requried read access. 
+3. Add the custom Grafana dashboard to your managed grafana instance by importing this json file - Build Demo Grafana dashboard.json from the src folder.
+4.
+5. To get Cosmos DB metrics into Grafana, you need to provide the Managed Grafana instance read access to the CosmosDB cluster. That will allow you to pin any metric to a Grafana dashboard that has the requried read access.
 
 **9. Install the Metrics add-on**
 
@@ -203,7 +187,7 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
    ```azurecli
 
     az aks update --enable-azuremonitormetrics -n <cluster-name> -g <cluster-resource-group> --azure-monitor-workspace-resource-id <azure-monitor-workspace-name-resource-id> --grafana-resource-id  <grafana-workspace-name-resource-id>
-    
+
 ```
 
 ## Testing sample application locally on Docker
@@ -215,7 +199,7 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
 1. Run the below commands to build the Docker container images for order-generator and order-processor applications.
 
     ```dotnetcli
-    
+
     docker build --file .\src\Scaler.Demo\OrderGenerator\Dockerfile --force-rm --tag cosmosdb-order-generator .\src
     docker build --file .\src\Scaler.Demo\OrderProcessor\Dockerfile --force-rm --tag cosmosdb-order-processor .\src
     ```
@@ -315,25 +299,102 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
 
 1. Stop order-processor container from the first shell by pressing Ctrl+ C.
 
- 
+
 ## Deploying KEDA and external scaler to cluster
+
+### Authenticate to Azure and Set Local Environment Variables
 
 1. Open command prompt or shell and change to the root directory of the cloned repo.
 
-    ```dotnetcli
-    docker build --file .\src\Scaler\Dockerfile --force-rm --tag cosmosdb-scaler .\src
-    ```
-
-1.  Push the **scaler** container image to Azure Container Registry. Set the environment variables by replacing the {ACR Name} placeholders with your own values.
-
-    ```dotnetcli
+    ```azurecli
     az login
-    az acr login --name {ACR Name}
-    
-    docker tag cosmosdb-scaler:latest {ACR Name}.azurecr.io/cosmosdb/scaler
-    docker push {ACR Name}.azurecr.io/cosmosdb/scaler
+
+    az account set -s <Subscription ID>
+    ```
+
+1. Find the Bicep deployment and use the outputs to set local environment variables
+
+
+1. Open command prompt or shell and change to the root directory of the cloned repo.
+
+    ```azurecli
+    az deployment sub list --query '[].name'
+    acrName=$(az deployment sub show --name $deploymentName --query 'properties.outputs.acrName.value' -o tsv)
+    cosmosName=$(az deployment sub show --name $deploymentName --query 'properties.outputs.cosmosName.value' -o tsv)
+    clientId=$(az deployment sub show --name $deploymentName --query 'properties.outputs.workloadIdentity.value' -o tsv)
+    ```
+
+### Build and Publish the External Scaler Container Image
+
+#### Building locally and publish to Azure Container Registry
+
+1.  Build and push the **scaler** container image to Azure Container Registry.
+
+    ```dotnetcli
+    az acr login --name $acrName
+    docker build --file .\src\Scaler\Dockerfile --force-rm --tag $acrName.azurecr.io/cosmosdb/scaler .\src
+    docker push $acrName.azurecr.io/cosmosdb/scaler
+    ```
+
+#### Building and Publishing with Azure Container Registry
+
+1. Use the `az` CLI to submit the build context to Azure Container Registry to be built
+
+    ```dotnetcli
+    az acr build --registry $acrName -f ./src/Scaler/Dockerfile -t cosmosdb/scaler:latest ./src
+    ```
+
+### Create the service account for AKS Workload Identity
+
+1. Get the Client ID for the Managed Identity that the services will use to access CosmosDB.
+
+    ```dotnetcli
+    echo "Workload IdentityclientId: $clientId"
+    ```
+
+1. Using the following YAML template, create a 'service_account.yaml'
+
+    ```yml
+    # Create namespace for the service account and services
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      creationTimestamp: null
+      name: cosmosdb-order-processor
+
+    ---
+    # Create service account for use with workload identity
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      annotations:
+        azure.workload.identity/client-id: { AKS Managed Identity Client ID}
+      name: workload-identity-sa
+      namespace: cosmosdb-order-processor
 
     ```
+
+1. Apply 'service_account' deployment YAML
+
+    ```azurecli
+    kubectl apply -f service_account.yaml
+    ```
+
+    You should see the following results.
+
+    ```
+    namespace/cosmosdb-order-processor created
+    serviceaccount/workload-identity-sa created
+    ```
+
+### Deploy the scaler to AKS
+
+1. Retrieve the ACR Name to update the deployment YAML.
+
+    ```dotnetcli
+    echo "ACR Name: $acrName"
+    ```
+
 1. Using the following YAML template create a 'scaler_deploy.yaml'. Make sure to update your own values for {ACR Name} placeholder.
 
     ```yml
@@ -352,19 +413,20 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
       template:
         metadata:
           labels:
-            aadpodidbinding: "cosmosdb-order-processor-identity"
+            azure.workload.identity/use: "true"
             app: cosmosdb-scaler
         spec:
+          serviceAccountName: workload-identity-sa
           containers:
             - image: {ACR Name}.azurecr.io/cosmosdb/scaler:latest"   # update as per your environment, example myacrname.azurecr.io/cosmosdb/scaler:latest. Do NOT add https:// in ACR Name
               imagePullPolicy: Always
               name: cosmosdb-scaler
               ports:
                 - containerPort: 4050
-    
+
     ---
     # Assign hostname to the scaler application.
-    
+
     apiVersion: v1
     kind: Service
     metadata:
@@ -382,7 +444,7 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
 1. Apply 'scaler_deploy' deployment YAML
 
     ```azurecli
-    kubectl apply -f scaler_deploy.yaml --namespace cosmosdb-order-processor
+    kubectl apply -f scaler_deploy.yaml
     ```
 
     You should see the following result.
@@ -394,13 +456,32 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
 
 ## Deploying the order processor to cluster
 
-1. Push the **cosmosdb-order-processor** container image to Azure Container Registry.Set the environment variables by replacing the {ACR Name} placeholders with your own values.
+### Build and Publish the Order Processor Container Image
+
+#### Building locally and publish to Azure Container Registry
+
+1. Build and push the **cosmosdb-order-processor** container image to Azure Container Registry.
 
     ```dotnetcli
-    
-    docker tag cosmosdb-order-processor:latest {ACR Name}.azurecr.io/cosmosdb/order-processor
-    docker push {ACR Name}.azurecr.io/cosmosdb/order-processor
-    
+    docker build --file ./src/Scaler.Demo/OrderProcessor/Dockerfile --force-rm --tag $acrName.azurecr.io/cosmosdb/order-processor ./src
+    docker push $acrName.azurecr.io/cosmosdb/order-processor
+    ```
+
+#### Building and Publishing with Azure Container Registry
+
+1. Use the `az` CLI to submit the build context to Azure Container Registry to be built
+
+    ```dotnetcli
+    az acr build --registry $acrName -f ./src/Scaler.Demo/OrderProcessor/Dockerfile -t cosmosdb/order-processor:latest ./src
+    ```
+
+### Deploy the OrderProcessor Service to AKS
+
+1. Retrieve the ACR Name and Cosmos DB Account Name to update the deployment YAML.
+
+    ```dotnetcli
+    echo "ACR Name: $acrName"
+    echo "Cosmos DB Account Name: $cosmosName"
     ```
 
 1. Using the following YAML template create a 'orderprocessor_deploy.yaml'. Make sure to update your own values for {ACR Name}, {Cosmos DB Account Name} placeholders.
@@ -410,8 +491,8 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
     kind: Deployment
     metadata:
       name: cosmosdb-order-processor
+      namespace: cosmosdb-order-processor
       labels:
-        aadpodidbinding: "cosmosdb-order-processor-identity"
         app: cosmosdb-order-processor
     spec:
       replicas: 1
@@ -422,23 +503,24 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
         metadata:
           labels:
             app: cosmosdb-order-processor
-            aadpodidbinding: "cosmosdb-order-processor-identity"
+            azure.workload.identity/use: "true"
         spec:
+          serviceAccountName: workload-identity-sa
           containers:
           - name: mycontainer
             image: {ACR Name}.azurecr.io/cosmosdb/order-processor:latest   # update as per your environment, example myacrname.azurecr.io/cosmosdb/order-processor:latest. Do NOT add https:// in ACR Name
             imagePullPolicy: Always
             env:
               - name: CosmosDbConfig__Endpoint
-                alue: https://{Cosmos DB Account Name}.documents.azure.com:443/  # update as per your environment
+                value: https://{Cosmos DB Account Name}.documents.azure.com:443/  # update as per your environment
               - name: CosmosDbConfig__LeaseEndpoint
-                value: https://{Cosmos DB Account Name}.documents.azure.com:443/ # update as per your environment     
+                value: https://{Cosmos DB Account Name}.documents.azure.com:443/ # update as per your environment
     ```
 
 1. Apply 'orderprocessor_deploy.yml' deployment YAML
 
     ```azurecli
-   kubectl apply -f orderprocessor_deploy.yml  --namespace cosmosdb-order-processor
+   kubectl apply -f orderprocessor_deploy.yml
     ```
 
 1. Ensure that the order-processor application is running correctly on the cluster by checking application logs.
@@ -473,11 +555,19 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
           Content root path: /app
     ```
 
+### Deploy the Scaled Object to AKS
+
+1. Retrieve the Cosmos DB Account Name to update the deployment YAML.
+
+    ```dotnetcli
+    echo "Cosmos DB Account Name: $cosmosName"
+    ```
+
 1. Using the following YAML template create a 'deploy-scaledobject.yaml'. Make sure to update your own values for {Cosmos DB Account Name} placeholder.
 
     ```yml
     # Create KEDA scaled object to scale order processor application.
-    
+
     apiVersion: keda.sh/v1alpha1
     kind: ScaledObject
     metadata:
@@ -498,15 +588,14 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
             leaseDatabaseId: StoreDatabase
             leaseContainerId: OrderProcessorLeases
             processorName: OrderProcessor
-    
+
     ```
 
-1. Apply 'orderprocessor_deploy.yml' deployment YAML
+1. Apply 'deploy-scaledobject.yaml' deployment YAML
 
     ```azurecli
-    kubectl apply -f deploy-scaledobject.yaml  --namespace cosmosdb-order-processor
+    kubectl apply -f deploy-scaledobject.yaml
     ```
-
 
 ## Testing auto-scaling for sample application
 
@@ -526,13 +615,31 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
 
 ### Deploying the single partition order generator to cluster
 
+#### Building locally and publishing to Azure Container Registry
+
 1. Push the **cosmosdb-order-generator** container image to Azure Container Registry.Set the environment variables by replacing the {ACR Name} placeholders with your own values.
 
     ```dotnetcli
-    
-    docker tag cosmosdb-order-generator:latest {ACR Name}.azurecr.io/cosmosdb/order-generator
-    docker push {ACR Name}.azurecr.io/cosmosdb/order-generator
+    docker build --file ./src/Scaler.Demo/OrderGenerator/Dockerfile --force-rm --tag $acrName.azurecr.io/cosmosdb/order-generator ./src
+    docker push $acrName.azurecr.io/cosmosdb/order-generator
 
+    ```
+
+#### Building and Publishing with Azure Container Registry
+
+1. Use the `az` CLI to submit the build context to Azure Container Registry to be built
+
+    ```dotnetcli
+    az acr build --registry $acrName -f ./src/Scaler.Demo/OrderGenerator/Dockerfile -t cosmosdb/order-generator:latest ./src
+    ```
+
+### Deploying the Single Partition OrderGenerator Service to AKS
+
+1. Retrieve the ACR Name and Cosmos DB Account Name to update the deployment YAML.
+
+    ```dotnetcli
+    echo "ACR Name: $acrName"
+    echo "Cosmos DB Account Name: $cosmosName"
     ```
 
 1. Using the following YAML template create a 'ordergenerator_sp_deploy.yaml'. Make sure to update your own values for {ACR Name}, {Cosmos DB Account Name} placeholders.
@@ -542,9 +649,8 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
     kind: Deployment
     metadata:
       name: single-partition-order-generator
-      namespace: cosmosdb-order-processor  
+      namespace: cosmosdb-order-processor
       labels:
-        aadpodidbinding: "cosmosdb-order-processor-identity"
         app: single-partition-order-generator
     spec:
       replicas: 1
@@ -555,8 +661,9 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
         metadata:
           labels:
             app: single-partition-order-generator
-            aadpodidbinding: "cosmosdb-order-processor-identity"
+            azure.workload.identity/use: "true"
         spec:
+          serviceAccountName: workload-identity-sa
           containers:
           - name: mycontainer
             image: {ACR Name}.azurecr.io/cosmosdb/order-generator:latest   # update as per your environment, example myacrname.azurecr.io/cosmosdb/order-generator:latest. Do NOT add https:// in ACR Name
@@ -565,15 +672,14 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
             env:
               - name: CosmosDbConfig__Endpoint
                 value: https://{Cosmos DB Account Name}.documents.azure.com:443/  # update as per your environment
- 
+
     ```
 
 1. Apply 'ordergenerator_sp_deploy.yaml' deployment YAML
 
     ```azurecli
-   kubectl apply -f ordergenerator_sp_deploy.yaml  --namespace cosmosdb-order-processor
+   kubectl apply -f ordergenerator_sp_deploy.yaml
     ```
-
 
 1. Verify that only one pod is created for the **order-processor**. It may take a few seconds for the pod to show up. You should see the following result.
 
@@ -592,6 +698,13 @@ This option creates a link between the Azure Monitor workspace and the Grafana w
 
 ### Deploying the multi partition order generator to cluster
 
+1. Retrieve the ACR Name and Cosmos DB Account Name to update the deployment YAML.
+
+    ```dotnetcli
+    echo "ACR Name: $acrName"
+    echo "Cosmos DB Account Name: $cosmosName"
+    ```
+
 Now, add more orders to the Cosmos DB container but this time across multiple partitions.
 1. Using the following YAML template create a 'ordergenerator_mp_deploy.yaml'. Make sure to update your own values for {ACR Name}, {Cosmos DB Account Name} placeholders.
 
@@ -600,9 +713,8 @@ Now, add more orders to the Cosmos DB container but this time across multiple pa
     kind: Deployment
     metadata:
       name: multi-partition-order-generator
-      namespace: cosmosdb-order-processor  
+      namespace: cosmosdb-order-processor
       labels:
-        aadpodidbinding: "cosmosdb-order-processor-identity"
         app: multi-partition-order-generator
     spec:
       replicas: 1
@@ -613,8 +725,9 @@ Now, add more orders to the Cosmos DB container but this time across multiple pa
         metadata:
           labels:
             app: multi-partition-order-generator
-            aadpodidbinding: "cosmosdb-order-processor-identity"
+            azure.workload.identity/use: "true"
         spec:
+          serviceAccountName: workload-identity-sa
           containers:
           - name: mycontainer
             image: {ACR Name}.azurecr.io/cosmosdb/order-generator:latest   # update as per your environment, example myacrname.azurecr.io/cosmosdb/order-generator:latest. Do NOT add https:// in ACR Name
@@ -623,13 +736,13 @@ Now, add more orders to the Cosmos DB container but this time across multiple pa
             env:
               - name: CosmosDbConfig__Endpoint
                 value: https://{Cosmos DB Account Name}.documents.azure.com:443/  # update as per your environment
-     
+
     ```
 
 1. Apply 'ordergenerator_sp_deploy.yaml' deployment YAML
 
     ```azurecli
-   kubectl apply -f ordergenerator_mp_deploy.yaml  --namespace cosmosdb-order-processor
+   kubectl apply -f ordergenerator_mp_deploy.yaml
     ```
 
 1. Verify that two pods are created for the **order-processor**.
@@ -650,15 +763,15 @@ Now, add more orders to the Cosmos DB container but this time across multiple pa
     ```
 
 1. You can also verify that both order-processor pods are able to share the processing of orders.
-    
+
     1. Check the first order processor pod logs.
 
           ```azurecli
           kubectl logs cosmosdb-order-processor-767d498685-cmf8l --tail=4
           ```
-    
+
           You should see the following result.
-    
+
           ```text
           2021-09-03 12:57:41 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
               Order 5ba7f503-0185-49f6-9fce-3da999464049 processed
@@ -671,9 +784,9 @@ Now, add more orders to the Cosmos DB container but this time across multiple pa
           ```azurecli
           kubectl logs cosmosdb-order-processor-767d498685-t7fs5 --tail=4
           ```
-    
+
           You should see the following result.
-    
+
           ```text
           2021-09-03 12:57:53 info: Keda.CosmosDb.Scaler.Demo.OrderProcessor.Worker[0]
               Order e881c998-1318-411e-8181-fa638335910e processed
@@ -687,11 +800,11 @@ Now, add more orders to the Cosmos DB container but this time across multiple pa
 
   ```azurecli
 
-  kubectl delete -f ordergenerator_sp_deploy.yaml  --namespace cosmosdb-order-processor
-  kubectl delete -f ordergenerator_mp_deploy.yaml  --namespace cosmosdb-order-processor
+  kubectl delete -f ordergenerator_sp_deploy.yaml
+  kubectl delete -f ordergenerator_mp_deploy.yaml
   ```
 
-1. Wait for 10-15 minutes. The pods will automatically scale down to 0. 
+1. Wait for 10-15 minutes. The pods will automatically scale down to 0.
 
   ```azurecli
   # kubectl get pods --namespace cosmosdb-order-processor

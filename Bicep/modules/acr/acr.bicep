@@ -24,7 +24,7 @@ resource acrPullDefinition 'Microsoft.Authorization/roleDefinitions@2018-01-01-p
 
 
 resource aksAcrPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(resourceGroup().id)
+  name: guid(principalId, resourceGroup().id, acrPullDefinition.id)
   scope: acr
   properties: {
     principalId: principalId

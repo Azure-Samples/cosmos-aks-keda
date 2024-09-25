@@ -17,7 +17,7 @@ kubectl get pods -n cosmosdb-order-processor --field-selector=status.phase=Runni
 kubectl logs <podname> -n cosmosdb-order-processor
 
 ## Switch to Grafana
-- SHow the generator deployment pod count going up 
-- How the no. of processor pods should match up to the     Count of Partitions with lag in the scaler logs.
+- Show the generator deployment pod count going up 
+- How the no. of processor pods should match up to the Count of Partitions with lag in the scaler logs.
 
 ## Move over to cosmosDB to show some of the insights and the cool partitioning Stuff

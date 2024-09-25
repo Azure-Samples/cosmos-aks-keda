@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cosmosdb-order-processor
+  namespace: cosmosdb-order-processor
   labels:
-    aadpodidbinding: "cosmosdb-order-processor-identity"
     app: cosmosdb-order-processor
 spec:
   replicas: 1
@@ -14,8 +14,9 @@ spec:
     metadata:
       labels:
         app: cosmosdb-order-processor
-        aadpodidbinding: "cosmosdb-order-processor-identity"
+        azure.workload.identity/use: "true"
     spec:
+      serviceAccountName: sa
       containers:
       - name: mycontainer
         image: {ACR Name}.azurecr.io/cosmosdb/order-processor:latest   # update as per your environment, example myacrname.azurecr.io/cosmosdb/order-processor:latest. Do NOT add https:// in ACR Name
@@ -25,5 +26,3 @@ spec:
             value: https://{Cosmos DB Account Name}.documents.azure.com:443/  # update as per your environment
           - name: CosmosDbConfig__LeaseEndpoint
             value: https://{Cosmos DB Account Name}.documents.azure.com:443/ # update as per your environment
-
- 
