@@ -35,10 +35,10 @@ namespace Keda.CosmosDb.Scaler
 
             using MeterProvider meterProvider = Sdk.CreateMeterProviderBuilder()
                .AddMeter("OrderProcessor.CFStore")
-               .AddPrometheusExporter(opt =>
+               .AddPrometheusHttpListener(opt =>
                {
-                   opt.StartHttpListener = true;
-                   opt.HttpListenerPrefixes = new string[] { $"http://localhost:9184/" };
+                   opt.Host = "localhost";
+                   opt.Port = 9184;
                })
                 .Build();
         }
