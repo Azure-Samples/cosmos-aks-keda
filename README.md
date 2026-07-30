@@ -111,7 +111,7 @@ rgName=$(az deployment sub show --name $deploymentName --query 'properties.outpu
 az aks get-credentials -n $aksName -g $rgName
 ```
 
-**7. Deploy KEDA and External Scaler**
+**7. Deploy KEDA**
 
 Use the below command to add and update Helm chart repo.
 
@@ -124,14 +124,14 @@ Use the below command to install KEDA Helm chart (or follow one of the other ins
 ```azurecli
 helm install keda kedacore/keda --namespace keda --create-namespace
 ```
-Alternatively, You can use the mangaged AKS addon for Keda - install the AKS KEDA add-on with Azure CLI:
+Alternatively, You can use the managed AKS addon for Keda - install the AKS KEDA add-on with Azure CLI:
 
 Register the AKS-KedaPreview feature flag by using the az feature register command, as shown in the following example:
-```azurezli
+```azurecli
 az feature register --namespace "Microsoft.ContainerService" --name "AKS-KedaPreview"
 ```
 It takes a few minutes for the status to show Registered. Verify the registration status by using the az feature show command:
-```azurezli
+```azurecli
 az feature show --namespace "Microsoft.ContainerService" --name "AKS-KedaPreview"
 ```
 When the status reflects Registered, refresh the registration of the Microsoft.ContainerService resource provider by using the az provider register command:
@@ -145,13 +145,10 @@ az aks update \
   --name myAKSCluster \
   --enable-keda
   ```
-Use the below command to install Azure Cosmos DB external scaler Helm chart.
-
-```azurecli
-helm install external-scaler-azure-cosmos-db kedacore/external-scaler-azure-cosmos-db --namespace keda --create-namespace
-```
 
 For more information refer to [Deploying KEDA](https://keda.sh/docs/deploy/) documentation page to deploy KEDA on your Kubernetes cluster.
+
+**Note:** The external scaler will be built from source and deployed to the cluster in the [Deploying KEDA and external scaler to cluster](#deploying-keda-and-external-scaler-to-cluster) section below.
 
 **8. Enable Azure Monitor Managed Prometheus and Managed Grafana on AKS Cluster**
 
